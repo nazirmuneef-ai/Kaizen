@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Kaizen Tracker</title>
+
+<meta name="theme-color" content="#F5EEDD">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kaizen">
+
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiS2FpemVuIFRyYWNrZXIiLCJzaG9ydF9uYW1lIjoiS2FpemVuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI0Y1RUVERCIsInRoZW1lX2NvbG9yIjoiI0Y1RUVERCIsInN0YXJ0X3VybCI6Ii4ifQ==">
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #F5EEDD;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: contain;
+  }
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    min-height: 100vh;
+  }
+</style>
+</head>
+<body>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --paper: #F5EEDD;
+  --paper-deep: #ECE1C6;
+  --line: #D9CBA8;
+  --ink: #1F3B57;
+  --ink-soft: #5B6B7A;
+  --done: #3F6B4F;
+  --miss: #A63D40;
+  --gold: #B8860B;
+  --maroon: #7A2E2E;
+  --paper-dark: #E7DAB8;
+  --accent: #7A2E2E;
+}
+
+* { box-sizing: border-box; }
+
+.kz-root {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  padding: 16px 14px 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* Header */
+.kz-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: 10px;
+}
+.kz-title {
+  font-family: 'Caveat', cursive;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--maroon);
+  line-height: 1.1;
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  padding: 0;
+}
+.kz-quote {
+  font-family: 'Caveat', cursive;
+  font-size: 16px;
+  color: var(--ink-soft);
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  padding: 0;
+}
+.kz-monthbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.kz-monthbar button {
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.kz-monthlabel {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Stats */
+.kz-stats {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+.kz-stat {
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-width: 72px;
+  flex: 1;
+  text-align: center;
+}
+.kz-stat-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--maroon);
+}
+.kz-stat-label {
+  font-size: 10px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+
+/* Section title */
+.kz-section-title {
+  font-family: 'Caveat', cursive;
+  font-size: 22px;
+  color: var(--ink);
+  margin: 16px 0 8px;
+}
+
+/* Habit table */
+.kz-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.35);
+  -webkit-overflow-scrolling: touch;
+}
+table.kz-grid {
+  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+}
+table.kz-grid th, table.kz-grid td {
+  border: 1px solid var(--line);
+  text-align: center;
+  font-size: 12px;
+  padding: 0;
+}
+table.kz-grid th {
+  background: var(--paper-deep);
+  color: var(--ink-soft);
+  font-weight: 600;
+  padding: 5px 3px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.kz-habit-cell {
+  position: sticky;
+  left: 0;
+  background: var(--paper);
+  z-index: 2;
+  text-align: left !important;
+  padding: 6px 8px !important;
+  min-width: 160px;
+  max-width: 160px;
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-right: 2px solid var(--line) !important;
+}
+.kz-habit-cell input {
+  border: none;
+  background: transparent;
+  font-size: 12.5px;
+  color: var(--ink);
+  width: 100%;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+}
+.kz-habit-num {
+  font-family: 'Caveat', cursive;
+  font-size: 15px;
+  color: var(--maroon);
+  min-width: 16px;
+}
+.kz-daycell {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 700;
+  font-size: 13px;
+}
+.kz-daycell.done { color: var(--done); background: rgba(63,107,79,0.12); }
+.kz-daycell.miss { color: var(--miss); background: rgba(166,61,64,0.10); }
+.kz-remove-habit {
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+
+.kz-addhabit {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.kz-addhabit input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.5);
+  font-size: 13px;
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+}
+.kz-addhabit button, .kz-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--maroon);
+  background: var(--maroon);
+  color: var(--paper);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.kz-btn-outline {
+  background: transparent;
+  color: var(--maroon);
+  border: 1px solid var(--maroon);
+}
+
+/* Mood */
+.kz-mood-row {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  padding: 4px 0;
+}
+.kz-mood-day {
+  min-width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.4);
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+.kz-mood-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0 4px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.kz-mood-legend span { display: flex; align-items: center; gap: 4px; }
+.kz-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+/* Pages */
+.kz-page { display: none; }
+.kz-page.active { display: block; }
+
+/* Cards */
+.kz-card {
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.kz-card-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.kz-card input[type="text"], .kz-card input[type="number"], .kz-card input[type="time"], .kz-card select, .kz-card textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.6);
+  font-size: 13px;
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  margin-top: 4px;
+}
+.kz-card textarea { min-height: 60px; resize: vertical; }
+
+/* Goals */
+.kz-goal-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.kz-goal-item:last-child { border-bottom: none; }
+.kz-goal-check {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+.kz-goal-check.done {
+  background: var(--done);
+  border-color: var(--done);
+  color: white;
+}
+.kz-goal-text { flex: 1; }
+.kz-goal-text.done { text-decoration: line-through; color: var(--ink-soft); }
+.kz-goal-meta { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+.kz-goal-actions { display: flex; gap: 6px; }
+.kz-goal-actions button {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px;
+}
+
+/* Diet / Workout / Sleep lists */
+.kz-check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.kz-check-row:last-child { border-bottom: none; }
+.kz-check-box {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+.kz-check-box.done {
+  background: var(--done);
+  border-color: var(--done);
+  color: white;
+}
+.kz-check-label { flex: 1; font-size: 14px; }
+
+/* Sleep specific */
+.kz-sleep-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+.kz-sleep-quality {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.kz-sleep-q {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.4);
+}
+.kz-sleep-q.active {
+  background: var(--maroon);
+  color: var(--paper);
+  border-color: var(--maroon);
+}
+
+/* Focus */
+.kz-priority {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.kz-priority-num {
+  font-family: 'Caveat', cursive;
+  font-size: 20px;
+  color: var(--maroon);
+  width: 24px;
+}
+.kz-priority input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.6);
+  font-size: 13px;
+}
+
+/* Bottom nav */
+.kz-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+  z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
+.kz-nav-btn {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  cursor: pointer;
+  color: var(--ink-soft);
+  font-size: 10px;
+  min-width: 52px;
+}
+.kz-nav-btn.active { color: var(--maroon); font-weight: 600; }
+.kz-nav-icon { font-size: 18px; line-height: 1; }
+
+/* Empty state */
+.kz-empty {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+/* Footer note */
+.kz-footer {
+  margin-top: 16px;
+  text-align: center;
+  font-family: 'Caveat', cursive;
+  font-size: 16px;
+  color: var(--ink-soft);
+  border-top: 1px dashed var(--line);
+  padding-top: 10px;
+}
+</style>
+
+<div class="kz-root" id="kzRoot">
+  <!-- HEADER (shared) -->
+  <div class="kz-header">
+    <input class="kz-title" id="kzTitle" value="Being Kaizen Challenge" />
+    <input class="kz-quote" id="kzQuote" value="Life should be great rather than long" />
+    <div class="kz-monthbar" id="kzMonthBar">
+      <button id="kzPrev">&larr; prev</button>
+      <div class="kz-monthlabel" id="kzMonthLabel"></div>
+      <button id="kzNext">next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ========== HABITS PAGE ========== -->
+  <div class="kz-page active" id="page-habits">
+    <div class="kz-stats" id="kzStats"></div>
+
+    <div class="kz-section-title">Habits</div>
+    <div class="kz-scroll">
+      <table class="kz-grid" id="kzHabitTable"></table>
+    </div>
+    <div class="kz-addhabit">
+      <input id="kzNewHabit" placeholder="Add a new habit..." />
+      <button id="kzAddBtn">Add</button>
+    </div>
+
+    <div class="kz-section-title">Mood</div>
+    <div class="kz-mood-legend">
+      <span><span class="kz-dot" style="background:#3F6B4F"></span>Happy</span>
+      <span><span class="kz-dot" style="background:#7A9A3F"></span>Moderate</span>
+      <span><span class="kz-dot" style="background:#B8860B"></span>Upset</span>
+      <span><span class="kz-dot" style="background:#C0693B"></span>Stressed</span>
+      <span><span class="kz-dot" style="background:#A63D40"></span>Regret</span>
+    </div>
+    <svg id="kzMoodChart" viewBox="0 0 620 90" style="width:100%;height:80px;"></svg>
+    <div class="kz-mood-row" id="kzMoodRow"></div>
+
+    <div class="kz-footer">Tap a day cell: blank → done → missed. Tap mood day to cycle.</div>
+  </div>
+
+  <!-- ========== GOALS PAGE ========== -->
+  <div class="kz-page" id="page-goals">
+    <div class="kz-section-title">Goals</div>
+    <div class="kz-card">
+      <div class="kz-card-title">Add a new goal</div>
+      <input type="text" id="goalTitle" placeholder="What do you want to achieve?" />
+      <input type="text" id="goalNote" placeholder="Notes / why it matters (optional)" style="margin-top:8px;" />
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="kz-btn" id="goalAddBtn" style="flex:1;">Add Goal</button>
+      </div>
+    </div>
+    <div id="goalsList"></div>
+    <div class="kz-footer">Long-term goals. Check them off when completed.</div>
+  </div>
+
+  <!-- ========== DIET PAGE ========== -->
+  <div class="kz-page" id="page-diet">
+    <div class="kz-section-title">Diet Today</div>
+    <div class="kz-card">
+      <div class="kz-card-title">Meals & Habits</div>
+      <div id="dietChecks"></div>
+    </div>
+    <div class="kz-card">
+      <div class="kz-card-title">Water (glasses)</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+        <button class="kz-btn-outline" id="waterMinus" style="padding:6px 14px;">−</button>
+        <span id="waterCount" style="font-size:24px;font-weight:700;color:var(--maroon);min-width:40px;text-align:center;">0</span>
+        <button class="kz-btn" id="waterPlus" style="padding:6px 14px;">+</button>
+        <span style="font-size:13px;color:var(--ink-soft);">/ 8 glasses</span>
+      </div>
+    </div>
+    <div class="kz-card">
+      <div class="kz-card-title">Notes</div>
+      <textarea id="dietNotes" placeholder="How did you eat today? Any wins or slips..."></textarea>
+    </div>
+    <div class="kz-footer">Track daily. Data is saved automatically.</div>
+  </div>
+
+  <!-- ========== WORKOUT PAGE ========== -->
+  <div class="kz-page" id="page-workout">
+    <div class="kz-section-title">Workout</div>
+    <div class="kz-card">
+      <div class="kz-card-title">Today's Session</div>
+      <div id="workoutChecks"></div>
+    </div>
+    <div class="kz-card">
+      <div class="kz-card-title">Duration (minutes)</div>
+      <input type="number" id="workoutMins" placeholder="e.g. 45" min="0" />
+    </div>
+    <div class="kz-card">
+      <div class="kz-card-title">Notes / what you did</div>
+      <textarea id="workoutNotes" placeholder="Exercises, sets, how you felt..."></textarea>
+    </div>
+    <div class="kz-footer">Log your training. Consistency > intensity.</div>
+  </div>
+
+  <!-- ========== SLEEP PAGE ========== -->
+  <div class="kz-page" id="page-sleep">
+    <div class="kz-section-title">Sleep</div>
+    <div class="kz-card">
+      <div class="kz-card-title">Last Night</div>
+      <div class="kz-sleep-inputs">
+        <div>
+          <label style="font-size:12px;color:var(--ink-soft);">Bedtime</label>
+          <input type="time" id="sleepBed" />
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--ink-soft);">Wake up</label>
+          <input type="time" id="sleepWake" />
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label style="font-size:12px;color:var(--ink-soft);">Quality</label>
+        <div class="kz-sleep-quality" id="sleepQuality">
+          <div class="kz-sleep-q" data-q="1">Poor</div>
+          <div class="kz-sleep-q" data-q="2">Okay</div>
+          <div class="kz-sleep-q" data-q="3">Good</div>
+          <div class="kz-sleep-q" data-q="4">Great</div>
+          <div class="kz-sleep-q" data-q="5">Excellent</div>
+        </div>
+      </div>
+    </div>
+    <div class="kz-card">
+      <div class="kz-card-title">Notes</div>
+      <textarea id="sleepNotes" placeholder="Dreams, interruptions, how you feel..."></textarea>
+    </div>
+    <div class="kz-footer">Protect your sleep. It fuels everything else.</div>
+  </div>
+
+  <!-- ========== FOCUS PAGE ========== -->
+  <div class="kz-page" id="page-focus">
+    <div class="kz-section-title">Focus & Productivity</div>
+    <div class="kz-card">
+      <div class="kz-card-title">Top 3 Priorities Today</div>
+      <div class="kz-priority">
+        <span class="kz-priority-num">1</span>
+        <input type="text" id="prio1" placeholder="Most important task..." />
+      </div>
+      <div class="kz-priority">
+        <span class="kz-priority-num">2</span>
+        <input type="text" id="prio2" placeholder="Second priority..." />
+      </div>
+      <div class="kz-priority">
+        <span class="kz-priority-num">3</span>
+        <input type="text" id="prio3" placeholder="Third priority..." />
+      </div>
+    </div>
+    <div class="kz-card">
+      <div class="kz-card-title">Deep Work / Focus Blocks</div>
+      <div id="focusChecks"></div>
+    </div>
+    <div class="kz-card">
+      <div class="kz-card-title">Wins & Notes</div>
+      <textarea id="focusNotes" placeholder="What did you accomplish? What distracted you?"></textarea>
+    </div>
+    <div class="kz-footer">Do the important things first. Protect your attention.</div>
+  </div>
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="kz-nav" id="kzNav">
+  <button class="kz-nav-btn active" data-page="habits">
+    <span class="kz-nav-icon">📋</span>
+    Habits
+  </button>
+  <button class="kz-nav-btn" data-page="goals">
+    <span class="kz-nav-icon">🎯</span>
+    Goals
+  </button>
+  <button class="kz-nav-btn" data-page="diet">
+    <span class="kz-nav-icon">🥗</span>
+    Diet
+  </button>
+  <button class="kz-nav-btn" data-page="workout">
+    <span class="kz-nav-icon">💪</span>
+    Workout
+  </button>
+  <button class="kz-nav-btn" data-page="sleep">
+    <span class="kz-nav-icon">😴</span>
+    Sleep
+  </button>
+  <button class="kz-nav-btn" data-page="focus">
+    <span class="kz-nav-icon">⚡</span>
+    Focus
+  </button>
+</nav>
+
+<script>
+(function(){
+  // ========== STATE ==========
+  const DEFAULT_HABITS = [
+    "Workout",
+    "Drink 2-3L water",
+    "Screen time less",
+    "Sleep before 01:00",
+    "Wake up before 6:00",
+    "30 minutes of writing",
+    "Fajr",
+    "Dhuhr",
+    "Asr",
+    "Maghreb",
+    "Esha",
+    "Learn Arabic (15 min)",
+    "Quran (10 minutes)",
+    "7000 Steps",
+    "No food from outside"
+  ];
+
+  const MOOD_LEVELS = [
+    {label:"Happy", color:"#3F6B4F"},
+    {label:"Moderate", color:"#7A9A3F"},
+    {label:"Upset", color:"#B8860B"},
+    {label:"Stressed", color:"#C0693B"},
+    {label:"Regret", color:"#A63D40"}
+  ];
+
+  const DIET_ITEMS = [
+    "Breakfast (healthy)",
+    "Lunch (healthy)",
+    "Dinner (healthy)",
+    "No junk / sugar",
+    "No food from outside",
+    "Ate enough protein",
+    "Vegetables / fruit"
+  ];
+
+  const WORKOUT_ITEMS = [
+    "Did a workout",
+    "Strength training",
+    "Cardio / walk",
+    "Stretching / mobility",
+    "Hit step goal"
+  ];
+
+  const FOCUS_ITEMS = [
+    "Deep work block 1 (45-90 min)",
+    "Deep work block 2",
+    "No phone during focus",
+    "Reviewed goals / plan",
+    "Cleared inbox / admin"
+  ];
+
+  const now = new Date();
+  let year = now.getFullYear();
+  let month = now.getMonth();
+  let habits = DEFAULT_HABITS.slice();
+  let title = "Being Kaizen Challenge";
+  let quote = "Life should be great rather than long";
+  let checks = {};
+  let mood = {};
+  let goals = [];
+  let daily = {}; // key: "Y-M-D" -> {diet:{}, water, dietNotes, workout:{}, workoutMins, workoutNotes, sleep:{}, focus:{}, prio1,2,3, focusNotes}
+
+  const HABITS_KEY = 'kaizen-tracker:habits-meta';
+  const GOALS_KEY = 'kaizen-tracker:goals';
+  function dataKey(y,m){ return 'kaizen-tracker:data:' + y + '-' + m; }
+  function dailyKey(y,m,d){ return y + '-' + m + '-' + d; }
+
+  function daysInMonth(y,m){ return new Date(y, m+1, 0).getDate(); }
+  function todayStr(){
+    const t = new Date();
+    return dailyKey(t.getFullYear(), t.getMonth(), t.getDate());
+  }
+
+  // ========== STORAGE ==========
+  function loadMeta(){
+    try {
+      const raw = localStorage.getItem(HABITS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.habits) habits = parsed.habits;
+        if (parsed.title) title = parsed.title;
+        if (parsed.quote) quote = parsed.quote;
+      }
+    } catch(e) {}
+  }
+  function saveMeta(){
+    try {
+      localStorage.setItem(HABITS_KEY, JSON.stringify({habits, title, quote}));
+    } catch(e) {}
+  }
+  function loadMonth(){
+    checks = {}; mood = {};
+    try {
+      const raw = localStorage.getItem(dataKey(year,month));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        checks = parsed.checks || {};
+        mood = parsed.mood || {};
+      }
+    } catch(e) {}
+  }
+  function saveMonth(){
+    try {
+      localStorage.setItem(dataKey(year,month), JSON.stringify({checks, mood}));
+    } catch(e) {}
+  }
+  function loadGoals(){
+    try {
+      const raw = localStorage.getItem(GOALS_KEY);
+      if (raw) goals = JSON.parse(raw);
+    } catch(e) {}
+  }
+  function saveGoals(){
+    try {
+      localStorage.setItem(GOALS_KEY, JSON.stringify(goals));
+    } catch(e) {}
+  }
+  function loadDaily(){
+    try {
+      const raw = localStorage.getItem('kaizen-tracker:daily');
+      if (raw) daily = JSON.parse(raw);
+    } catch(e) {}
+  }
+  function saveDaily(){
+    try {
+      localStorage.setItem('kaizen-tracker:daily', JSON.stringify(daily));
+    } catch(e) {}
+  }
+  function getTodayData(){
+    const k = todayStr();
+    if (!daily[k]) {
+      daily[k] = {
+        diet: {}, water: 0, dietNotes: '',
+        workout: {}, workoutMins: '', workoutNotes: '',
+        sleep: { bed:'', wake:'', quality:0, notes:'' },
+        focus: {}, prio1:'', prio2:'', prio3:'', focusNotes:''
+      };
+    }
+    return daily[k];
+  }
+
+  // ========== RENDER HELPERS ==========
+  function render(){
+    document.getElementById('kzTitle').value = title;
+    document.getElementById('kzQuote').value = quote;
+    const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    document.getElementById('kzMonthLabel').textContent = monthNames[month] + " " + year;
+
+    renderStats();
+    renderHabitTable();
+    renderMood();
+  }
+
+  function renderStats(){
+    const days = daysInMonth(year, month);
+    let done=0, miss=0, total=habits.length*days;
+    Object.values(checks).forEach(v => { if(v==='done') done++; else if(v==='miss') miss++; });
+    const pct = total ? Math.round((done/total)*100) : 0;
+    const el = document.getElementById('kzStats');
+    el.innerHTML = '';
+    const stats = [
+      {num: pct+'%', label:'completion'},
+      {num: done, label:'done'},
+      {num: miss, label:'missed'},
+      {num: habits.length, label:'habits'}
+    ];
+    stats.forEach(s=>{
+      const d = document.createElement('div');
+      d.className = 'kz-stat';
+      d.innerHTML = '<div class="kz-stat-num">'+s.num+'</div><div class="kz-stat-label">'+s.label+'</div>';
+      el.appendChild(d);
+    });
+  }
+
+  function renderHabitTable(){
+    const days = daysInMonth(year, month);
+    const table = document.getElementById('kzHabitTable');
+    table.innerHTML = '';
+
+    const thead = document.createElement('tr');
+    const thHabit = document.createElement('th');
+    thHabit.className = 'kz-habit-cell';
+    thHabit.style.background = 'var(--paper-deep)';
+    thHabit.textContent = 'Habit';
+    thead.appendChild(thHabit);
+    for(let d=1; d<=days; d++){
+      const th = document.createElement('th');
+      th.textContent = d;
+      thead.appendChild(th);
+    }
+    table.appendChild(thead);
+
+    habits.forEach((h, hi) => {
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.className = 'kz-habit-cell';
+      td.innerHTML = '<span class="kz-habit-num">'+(hi+1)+'</span>';
+      const inp = document.createElement('input');
+      inp.value = h;
+      inp.addEventListener('change', (e)=>{
+        habits[hi] = e.target.value;
+        saveMeta();
+      });
+      td.appendChild(inp);
+      const rm = document.createElement('button');
+      rm.className = 'kz-remove-habit';
+      rm.textContent = '✕';
+      rm.title = 'Remove habit';
+      rm.addEventListener('click', ()=>{
+        habits.splice(hi,1);
+        const newChecks = {};
+        Object.keys(checks).forEach(k=>{
+          const [idx, day] = k.split('-').map(Number);
+          if (idx < hi) newChecks[k] = checks[k];
+          else if (idx > hi) newChecks[(idx-1)+'-'+day] = checks[k];
+        });
+        checks = newChecks;
+        saveMeta(); saveMonth(); render();
+      });
+      td.appendChild(rm);
+      tr.appendChild(td);
+
+      for(let d=1; d<=days; d++){
+        const cell = document.createElement('td');
+        const key = hi+'-'+d;
+        const state = checks[key] || '';
+        cell.className = 'kz-daycell' + (state ? ' '+state : '');
+        cell.textContent = state === 'done' ? '✓' : (state === 'miss' ? '✕' : '');
+        cell.addEventListener('click', ()=>{
+          const cur = checks[key] || '';
+          const next = cur === '' ? 'done' : (cur === 'done' ? 'miss' : '');
+          if (next === '') delete checks[key]; else checks[key] = next;
+          saveMonth();
+          render();
+        });
+        tr.appendChild(cell);
+      }
+      table.appendChild(tr);
+    });
+  }
+
+  function renderMood(){
+    const days = daysInMonth(year, month);
+    const row = document.getElementById('kzMoodRow');
+    row.innerHTML = '';
+    for(let d=1; d<=days; d++){
+      const btn = document.createElement('div');
+      btn.className = 'kz-mood-day';
+      const lvl = mood[d];
+      if (lvl !== undefined){
+        btn.style.background = MOOD_LEVELS[lvl].color + '33';
+        btn.style.color = MOOD_LEVELS[lvl].color;
+        btn.style.borderColor = MOOD_LEVELS[lvl].color;
+      }
+      btn.textContent = d;
+      btn.addEventListener('click', ()=>{
+        const cur = mood[d];
+        const next = cur === undefined ? 0 : (cur+1 >= MOOD_LEVELS.length ? undefined : cur+1);
+        if (next === undefined) delete mood[d]; else mood[d] = next;
+        saveMonth();
+        renderMood();
+      });
+      row.appendChild(btn);
+    }
+    drawMoodChart(days);
+  }
+
+  function drawMoodChart(days){
+    const svg = document.getElementById('kzMoodChart');
+    const w = 620, h = 90, pad = 10;
+    const usableW = w - pad*2;
+    const stepX = usableW / (days-1 || 1);
+    const points = [];
+    for(let d=1; d<=days; d++){
+      if (mood[d] !== undefined){
+        const x = pad + (d-1)*stepX;
+        const y = pad + (mood[d]/(MOOD_LEVELS.length-1)) * (h - pad*2);
+        points.push({x,y,d});
+      }
+    }
+    let svgContent = '<polyline points="' + points.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ') + '" fill="none" stroke="#1F3B57" stroke-width="2"/>';
+    points.forEach(p=>{
+      svgContent += '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="'+MOOD_LEVELS[mood[p.d]].color+'"/>';
+    });
+    svg.innerHTML = svgContent;
+  }
+
+  // ========== GOALS ==========
+  function renderGoals(){
+    const list = document.getElementById('goalsList');
+    list.innerHTML = '';
+    if (goals.length === 0) {
+      list.innerHTML = '<div class="kz-empty">No goals yet. Add one above.</div>';
+      return;
+    }
+    goals.forEach((g, i) => {
+      const item = document.createElement('div');
+      item.className = 'kz-goal-item';
+      item.innerHTML = `
+        <div class="kz-goal-check ${g.done ? 'done' : ''}" data-i="${i}">${g.done ? '✓' : ''}</div>
+        <div class="kz-goal-text ${g.done ? 'done' : ''}">
+          <div>${g.title}</div>
+          ${g.note ? '<div class="kz-goal-meta">'+g.note+'</div>' : ''}
+        </div>
+        <div class="kz-goal-actions">
+          <button data-del="${i}" title="Delete">✕</button>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+
+    list.querySelectorAll('.kz-goal-check').forEach(el => {
+      el.addEventListener('click', () => {
+        const i = +el.dataset.i;
+        goals[i].done = !goals[i].done;
+        saveGoals();
+        renderGoals();
+      });
+    });
+    list.querySelectorAll('[data-del]').forEach(el => {
+      el.addEventListener('click', () => {
+        const i = +el.dataset.del;
+        goals.splice(i, 1);
+        saveGoals();
+        renderGoals();
+      });
+    });
+  }
+
+  // ========== DIET ==========
+  function renderDiet(){
+    const data = getTodayData();
+    const container = document.getElementById('dietChecks');
+    container.innerHTML = '';
+    DIET_ITEMS.forEach((label, i) => {
+      const row = document.createElement('div');
+      row.className = 'kz-check-row';
+      const done = data.diet[i];
+      row.innerHTML = `
+        <div class="kz-check-box ${done ? 'done' : ''}" data-i="${i}">${done ? '✓' : ''}</div>
+        <div class="kz-check-label">${label}</div>
+      `;
+      container.appendChild(row);
+    });
+    container.querySelectorAll('.kz-check-box').forEach(el => {
+      el.addEventListener('click', () => {
+        const i = +el.dataset.i;
+        data.diet[i] = !data.diet[i];
+        saveDaily();
+        renderDiet();
+      });
+    });
+    document.getElementById('waterCount').textContent = data.water || 0;
+    document.getElementById('dietNotes').value = data.dietNotes || '';
+  }
+
+  // ========== WORKOUT ==========
+  function renderWorkout(){
+    const data = getTodayData();
+    const container = document.getElementById('workoutChecks');
+    container.innerHTML = '';
+    WORKOUT_ITEMS.forEach((label, i) => {
+      const row = document.createElement('div');
+      row.className = 'kz-check-row';
+      const done = data.workout[i];
+      row.innerHTML = `
+        <div class="kz-check-box ${done ? 'done' : ''}" data-i="${i}">${done ? '✓' : ''}</div>
+        <div class="kz-check-label">${label}</div>
+      `;
+      container.appendChild(row);
+    });
+    container.querySelectorAll('.kz-check-box').forEach(el => {
+      el.addEventListener('click', () => {
+        const i = +el.dataset.i;
+        data.workout[i] = !data.workout[i];
+        saveDaily();
+        renderWorkout();
+      });
+    });
+    document.getElementById('workoutMins').value = data.workoutMins || '';
+    document.getElementById('workoutNotes').value = data.workoutNotes || '';
+  }
+
+  // ========== SLEEP ==========
+  function renderSleep(){
+    const data = getTodayData();
+    document.getElementById('sleepBed').value = data.sleep.bed || '';
+    document.getElementById('sleepWake').value = data.sleep.wake || '';
+    document.getElementById('sleepNotes').value = data.sleep.notes || '';
+    document.querySelectorAll('#sleepQuality .kz-sleep-q').forEach(el => {
+      el.classList.toggle('active', +el.dataset.q === data.sleep.quality);
+    });
+  }
+
+  // ========== FOCUS ==========
+  function renderFocus(){
+    const data = getTodayData();
+    document.getElementById('prio1').value = data.prio1 || '';
+    document.getElementById('prio2').value = data.prio2 || '';
+    document.getElementById('prio3').value = data.prio3 || '';
+    document.getElementById('focusNotes').value = data.focusNotes || '';
+
+    const container = document.getElementById('focusChecks');
+    container.innerHTML = '';
+    FOCUS_ITEMS.forEach((label, i) => {
+      const row = document.createElement('div');
+      row.className = 'kz-check-row';
+      const done = data.focus[i];
+      row.innerHTML = `
+        <div class="kz-check-box ${done ? 'done' : ''}" data-i="${i}">${done ? '✓' : ''}</div>
+        <div class="kz-check-label">${label}</div>
+      `;
+      container.appendChild(row);
+    });
+    container.querySelectorAll('.kz-check-box').forEach(el => {
+      el.addEventListener('click', () => {
+        const i = +el.dataset.i;
+        data.focus[i] = !data.focus[i];
+        saveDaily();
+        renderFocus();
+      });
+    });
+  }
+
+  // ========== NAVIGATION ==========
+  function showPage(name){
+    document.querySelectorAll('.kz-page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.querySelectorAll('.kz-nav-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.page === name);
+    });
+    // Show month bar only on habits
+    document.getElementById('kzMonthBar').style.display = name === 'habits' ? 'flex' : 'none';
+
+    if (name === 'goals') renderGoals();
+    if (name === 'diet') renderDiet();
+    if (name === 'workout') renderWorkout();
+    if (name === 'sleep') renderSleep();
+    if (name === 'focus') renderFocus();
+  }
+
+  // ========== EVENT LISTENERS ==========
+  document.getElementById('kzTitle').addEventListener('change', (e)=>{ title = e.target.value; saveMeta(); });
+  document.getElementById('kzQuote').addEventListener('change', (e)=>{ quote = e.target.value; saveMeta(); });
+
+  document.getElementById('kzPrev').addEventListener('click', ()=>{
+    month--; if (month < 0){ month = 11; year--; }
+    loadMonth(); render();
+  });
+  document.getElementById('kzNext').addEventListener('click', ()=>{
+    month++; if (month > 11){ month = 0; year++; }
+    loadMonth(); render();
+  });
+  document.getElementById('kzAddBtn').addEventListener('click', ()=>{
+    const inp = document.getElementById('kzNewHabit');
+    const val = inp.value.trim();
+    if (val){
+      habits.push(val);
+      inp.value = '';
+      saveMeta(); render();
+    }
+  });
+  document.getElementById('kzNewHabit').addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter') document.getElementById('kzAddBtn').click();
+  });
+
+  // Goals
+  document.getElementById('goalAddBtn').addEventListener('click', ()=>{
+    const title = document.getElementById('goalTitle').value.trim();
+    const note = document.getElementById('goalNote').value.trim();
+    if (title){
+      goals.unshift({title, note, done: false, created: Date.now()});
+      document.getElementById('goalTitle').value = '';
+      document.getElementById('goalNote').value = '';
+      saveGoals();
+      renderGoals();
+    }
+  });
+
+  // Diet water
+  document.getElementById('waterPlus').addEventListener('click', ()=>{
+    const data = getTodayData();
+    data.water = (data.water || 0) + 1;
+    saveDaily();
+    renderDiet();
+  });
+  document.getElementById('waterMinus').addEventListener('click', ()=>{
+    const data = getTodayData();
+    data.water = Math.max(0, (data.water || 0) - 1);
+    saveDaily();
+    renderDiet();
+  });
+  document.getElementById('dietNotes').addEventListener('change', (e)=>{
+    getTodayData().dietNotes = e.target.value;
+    saveDaily();
+  });
+
+  // Workout
+  document.getElementById('workoutMins').addEventListener('change', (e)=>{
+    getTodayData().workoutMins = e.target.value;
+    saveDaily();
+  });
+  document.getElementById('workoutNotes').addEventListener('change', (e)=>{
+    getTodayData().workoutNotes = e.target.value;
+    saveDaily();
+  });
+
+  // Sleep
+  document.getElementById('sleepBed').addEventListener('change', (e)=>{
+    getTodayData().sleep.bed = e.target.value;
+    saveDaily();
+  });
+  document.getElementById('sleepWake').addEventListener('change', (e)=>{
+    getTodayData().sleep.wake = e.target.value;
+    saveDaily();
+  });
+  document.getElementById('sleepNotes').addEventListener('change', (e)=>{
+    getTodayData().sleep.notes = e.target.value;
+    saveDaily();
+  });
+  document.querySelectorAll('#sleepQuality .kz-sleep-q').forEach(el => {
+    el.addEventListener('click', () => {
+      getTodayData().sleep.quality = +el.dataset.q;
+      saveDaily();
+      renderSleep();
+    });
+  });
+
+  // Focus
+  ['prio1','prio2','prio3'].forEach(id => {
+    document.getElementById(id).addEventListener('change', (e)=>{
+      getTodayData()[id] = e.target.value;
+      saveDaily();
+    });
+  });
+  document.getElementById('focusNotes').addEventListener('change', (e)=>{
+    getTodayData().focusNotes = e.target.value;
+    saveDaily();
+  });
+
+  // Nav
+  document.querySelectorAll('.kz-nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => showPage(btn.dataset.page));
+  });
+
+  // ========== INIT ==========
+  loadMeta();
+  loadMonth();
+  loadGoals();
+  loadDaily();
+  render();
+})();
+</script>
+</body>
+</html>
